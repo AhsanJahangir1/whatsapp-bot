@@ -7,7 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "venom-bot": "^5.0.21",
+    "venom-bot": "5.0.21",
     "axios": "^1.6.7"
   }
 }

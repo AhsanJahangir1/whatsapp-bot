@@ -2,12 +2,11 @@
   "name": "whatsapp-bot",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "dependencies": {
+    "@adiwajshing/baileys": "^6.7.5",
+    "express": "^4.18.2"
+  },
   "scripts": {
     "start": "node index.js"
-  },
-  "dependencies": {
-    "venom-bot": "5.0.21",
-    "axios": "^1.6.7"
   }
 }

@@ -1,32 +1,42 @@
-const venom = require('venom-bot');
-const axios = require('axios');
+const makeWASocket = require('@adiwajshing/baileys').default;
+const { useMultiFileAuthState } = require('@adiwajshing/baileys');
+const express = require('express');
 
-// WhatsApp session start
-venom
-  .create({
-    session: 'bot-session',
-    multidevice: true,
-  })
-  .then((client) => start(client))
-  .catch((err) => console.log(err));
+const app = express();
+const port = process.env.PORT || 3000;
 
-function start(client) {
-  client.onMessage(async (message) => {
-    if (!message.isGroupMsg) {
-      console.log('📩 Client:', message.body);
+async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info');
 
-      try {
-        const response = await axios.post(
-          'https://n8n-production-67d3.up.railway.app/webhook-test/3a74b79a-bf2c-4d91-bb93-5aa358bef50d',
-          { text: message.body }
-        );
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true
+    });
 
-        await client.sendText(message.from, response.data.reply || '⚠️ AI reply nahi mila');
-      } catch (error) {
-        console.error('❌ Error:', error.message);
-        await client.sendText(message.from, 'Server issue, try later.');
-      }
-    }
-  });
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('messages.upsert', async (m) => {
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe) return;
+
+        const sender = msg.key.remoteJid;
+        const text = msg.message.conversation;
+
+        console.log("Received:", text);
+
+        // Simple auto reply
+        await sock.sendMessage(sender, { text: "🤖 Auto Reply: " + text });
+    });
 }
+
+startBot();
+
+app.get("/", (req, res) => {
+    res.send("WhatsApp bot is running!");
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+
 
